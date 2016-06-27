@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Anonupload.iml" filepath="$PROJECT_DIR$/.idea/modules/Anonupload.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Anonupload_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Anonupload_main.iml" group="Anonupload" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Anonupload_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Anonupload_test.iml" group="Anonupload" />
+    </modules>
+  </component>
+</project>
