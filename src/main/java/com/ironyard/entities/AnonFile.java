@@ -20,12 +20,26 @@ public class AnonFile
     @Column(nullable=false)
     String realFilename;
 
+    boolean keep;
+
+    String nickname;
+
+    String password;
+
     public AnonFile()
     {
     }
 
     public AnonFile(String originalFilename, String realFilename)
     {
+        this.originalFilename = originalFilename;
+        this.realFilename = realFilename;
+        keep = false;
+    }
+
+    public AnonFile(int id, String originalFilename, String realFilename)
+    {
+        this.id = id;
         this.originalFilename = originalFilename;
         this.realFilename = realFilename;
     }
@@ -58,5 +72,35 @@ public class AnonFile
     public void setRealFilename(String realFilename)
     {
         this.realFilename = realFilename;
+    }
+
+    public boolean isKeep()
+    {
+        return keep;
+    }
+
+    public void setKeep(boolean keep)
+    {
+        this.keep = keep;
+    }
+
+    public String getNickname()
+    {
+        return nickname;
+    }
+
+    public void setNickname(String nickname)
+    {
+        this.nickname = nickname;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
     }
 }
