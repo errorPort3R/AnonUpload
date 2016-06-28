@@ -73,7 +73,7 @@ public class AnonFileController
             }
             if (identity != LARGEST_ID)
             {
-                AnonFile anonFile = new AnonFile(identity, file.getOriginalFilename(), uploadedFile.getName());
+                AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName());
                 if (nickname != null || !nickname.equals(""))
                 {
                     anonFile.setNickname(nickname);
@@ -82,7 +82,8 @@ public class AnonFileController
                 {
                     anonFile.setPassword(PasswordStorage.createHash(password));
                 }
-                 files.save(anonFile);
+                files.save(anonFile);
+                files.delete(identity);
             }
             else
             {
@@ -105,12 +106,11 @@ public class AnonFileController
         return "redirect:/";
     }
 
-    @RequestMapping(path = "/update", method = RequestMethod.PUT)
-    public String update(String id, String keep)
+    @RequestMapping(path = "/update", method = RequestMethod.POST)
+    public String update(String id)
     {
         int newId = Integer.valueOf(id);
-        boolean newKeep = Boolean.valueOf(keep);
-        files.findOne(newId).setKeep(newKeep);
+        files.findOne(newId).setKeep(!files.findOne(newId).isKeep());
         return "redirect:/";
     }
 
