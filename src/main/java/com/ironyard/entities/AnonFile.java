@@ -20,6 +20,7 @@ public class AnonFile
     @Column(nullable=false)
     String realFilename;
 
+    @Column(nullable=false)
     boolean keep;
 
     String nickname;
@@ -30,11 +31,12 @@ public class AnonFile
     {
     }
 
-    public AnonFile(String originalFilename, String realFilename)
+    public AnonFile(String originalFilename, String realFilename, boolean keep)
     {
         this.originalFilename = originalFilename;
         this.realFilename = realFilename;
-        keep = false;
+        this.keep = keep;
+
     }
 
     public AnonFile(int id, String originalFilename, String realFilename)

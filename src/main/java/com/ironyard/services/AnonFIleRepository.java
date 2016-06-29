@@ -12,5 +12,5 @@ import org.springframework.stereotype.Controller;
 public interface AnonFileRepository extends CrudRepository<AnonFile, Integer>
 {
     public Iterable<AnonFile> findByKeep(Boolean keep);
-    public Integer countByKeep(Boolean keep);
+    public Integer countByKeep(boolean keep);
 }

@@ -25,8 +25,7 @@ import java.util.Iterator;
 @Controller
 public class AnonFileController
 {
-    private static final int MAX_OVER_FILE_COUNT = 5;
-    private static final int LARGEST_ID = 2000000000;
+    private static final int MAX_OVER_FILE_COUNT = 2;
 
     @Autowired
     AnonFileRepository files;
@@ -38,9 +37,10 @@ public class AnonFileController
     }
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
-    public String upload(MultipartFile file, String nickname, String password) throws IOException, PasswordStorage.CannotPerformOperationException
+    public String upload(MultipartFile file, String nickname, String password, String keep) throws IOException, PasswordStorage.CannotPerformOperationException
     {
-        int keepCount=0;
+        int loseable=0;
+        boolean keeper = Boolean.valueOf(keep);
         File dir = new File("public/files");
         dir.mkdirs();
 
@@ -50,77 +50,86 @@ public class AnonFileController
         fos.write(file.getBytes());
 
         //get count of keep items
-        Iterable<AnonFile> workingList = new ArrayList<>();
-        workingList = files.findAll();
-        for (AnonFile f : workingList)
-        {
-            if (f.isKeep())
-            {
-                keepCount++;
-            }
-        }
+        loseable = files.countByKeep(false);
 
         //add or reassign files...
-        if ((files.count() >= MAX_OVER_FILE_COUNT) && (files.count()<=(keepCount+MAX_OVER_FILE_COUNT)))
+        Iterable<AnonFile> workingList = new ArrayList<>();
+        workingList = files.findAll();
+        if (loseable >= MAX_OVER_FILE_COUNT)
         {
-            int identity=LARGEST_ID;
+            //get oldest item that can be changed
+            int identity=0;
+            boolean firstRun = true;
             for (AnonFile f : workingList)
             {
-                if((f.getId() < identity) && (!f.isKeep()))
+                if (firstRun && (!f.isKeep()))
+                {
+                    identity = f.getId();
+                    firstRun = false;
+                }
+                if((!firstRun && f.getId() < identity) && (!f.isKeep()))
                 {
                     identity=f.getId();
                 }
             }
-            if (identity != LARGEST_ID)
-            {
-                AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName());
-                if (nickname != null || !nickname.equals(""))
-                {
-                    anonFile.setNickname(nickname);
-                }
-                if (password != null || !password.equals(""))
-                {
-                    anonFile.setPassword(PasswordStorage.createHash(password));
-                }
-                files.save(anonFile);
-                files.delete(identity);
-            }
-            else
-            {
-                System.err.printf("Array Full and ID not available!");
-            }
-        }
-        else
-        {
-            AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName());
+
+
+            //set new file in database
+
+            AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName(), keeper);
             if (nickname != null || !nickname.equals(""))
             {
                 anonFile.setNickname(nickname);
             }
-            if (password != null || !password.equals(""))
+            if (keep != null && keep.equals("on"))
             {
-                anonFile.setPassword(PasswordStorage.createHash(password));
+                anonFile.setKeep(true);
             }
+            else
+            {
+                anonFile.setKeep(false);
+            }
+            anonFile.setPassword(PasswordStorage.createHash(password));
+            files.save(anonFile);
+
+            String filename = files.findOne(identity).getRealFilename();
+            files.delete(identity);
+            File delFile = new File("public/files/", filename);
+            delFile.delete();
+        }
+        else
+        {
+            AnonFile anonFile = new AnonFile(file.getOriginalFilename(), uploadedFile.getName(), keeper);
+            if (nickname != null || !nickname.equals(""))
+            {
+                anonFile.setNickname(nickname);
+            }
+            if (keep != null && keep.equals("on"))
+            {
+                anonFile.setKeep(true);
+            }
+            else
+            {
+                anonFile.setKeep(false);
+            }
+            anonFile.setPassword(PasswordStorage.createHash(password));
             files.save(anonFile);
         }
         return "redirect:/";
     }
 
-    @RequestMapping(path = "/update", method = RequestMethod.POST)
-    public String update(String id)
+    @RequestMapping(path = "/delete", method = RequestMethod.POST)
+    public String delete(String id, String password) throws PasswordStorage.CannotPerformOperationException
     {
         int newId = Integer.valueOf(id);
-        files.findOne(newId).setKeep(!files.findOne(newId).isKeep());
-        return "redirect:/";
-    }
-
-    @RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-    public String delete(int id, String delete) throws PasswordStorage.CannotPerformOperationException
-    {
-        //int newId = Integer.valueOf(id);
-        if (PasswordStorage.createHash(delete).equals(files.findOne(id).getPassword()))
+        String deleteHash = PasswordStorage.createHash(password);
+        if (deleteHash.equals(files.findOne(newId).getPassword()))
         {
-            files.delete(id);
+            String filename = files.findOne(newId).getRealFilename();
+            files.delete(newId);
+            File delFile = new File("public/files/", filename);
+            delFile.delete();
+
         }
         else
         {

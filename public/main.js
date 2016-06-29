@@ -13,40 +13,39 @@ function getFiles(data)
             elem.text(data[i].nickname);
         }
 
-        var chkbx = $("<input>");
-        chkbx.attr("type", "checkbox");
-        chkbx.attr("name", "keep");
-        chkbx.attr("action", "/update");
-        chkbx.attr("method", "post");
 
-        var showPWbox = false;
         var delPW = $("<input>");
         delPW.attr("type", "text");
-        delPW.attr("name", "delete");
-        delPW.attr("placeholder", "Delete PW")
+        delPW.attr("name", "password");
+        delPW.attr("placeholder", "Delete PW");
+        delPW.attr("style", "display:inline");
 
         var delBtn = $("<button>");
         delBtn.attr("type", "submit");
+        delBtn.attr("style", "display:inline");
         delBtn.text("Delete");
 
-        $("#list").append(elem);
-        $("#list").append(chkbx);
+        var hid = $("<input>");
+        hid.attr("type", "hidden");
+        hid.attr("name", "id");
+        hid.attr("value", data[i].id);
 
-        $("#list").append(delPW);
-        $("#list").append(delBtn);
+        var form = $("<form>");
+        form.attr("action", "/delete");
+        form.attr("method", "post");
+        form.attr("style", "display:inline");
+        form.append(hid);
+        form.append(delPW);
+        form.append(delBtn);
+
+
+
+        $("#list").append(elem);
+        $("#list").append(form);
+        $("#list").append("</form>");
+        $("#list").append($("<br>"));
         $("#list").append($("<br>"));
     }
 }
 
 $.get("/files", getFiles);
-
-//        $("#list").append($("<form action='/update' method='put' style='display:inline;'>"));
-//        $("#list").append($("<input type='checkbox' name='keep'/>"));
-//        $("#list").append($("<input type='hidden' name='id' value='" + data[i].id +"'/>"));
-//        $("#list").append($("<button type='submit'>Update</button>"));
-//        $("#list").append($("</form>"));
-//        $("#list").append($("<form action='/delete' method='delete' style='display:inline;'>"));
-//        $("#list").append($("<input type='hidden' name='id' value='" + data[i].id +"'/>"));
-//        $("#list").append($("<input type='text' name='delete' placeholder='Delete PW'/>"));
-//        $("#list").append($("<button type='submit'>Delete</button>"));
-//        $("#list").append($("</form>"));
