@@ -40,7 +40,16 @@ public class AnonFileController
     public String upload(MultipartFile file, String nickname, String password, String keep) throws IOException, PasswordStorage.CannotPerformOperationException
     {
         int loseable=0;
-        boolean keeper = Boolean.valueOf(keep);
+        boolean keeper;
+        if (keep != null && keep.equals("on"))
+        {
+            keeper = true;
+        }
+        else
+        {
+            keeper = false;
+        }
+
         File dir = new File("public/files");
         dir.mkdirs();
 
@@ -55,7 +64,7 @@ public class AnonFileController
         //add or reassign files...
         Iterable<AnonFile> workingList = new ArrayList<>();
         workingList = files.findAll();
-        if (loseable >= MAX_OVER_FILE_COUNT)
+        if (loseable >= MAX_OVER_FILE_COUNT && !keeper)
         {
             //get oldest item that can be changed
             int identity=0;
@@ -81,14 +90,7 @@ public class AnonFileController
             {
                 anonFile.setNickname(nickname);
             }
-            if (keep != null && keep.equals("on"))
-            {
-                anonFile.setKeep(true);
-            }
-            else
-            {
-                anonFile.setKeep(false);
-            }
+
             anonFile.setPassword(PasswordStorage.createHash(password));
             files.save(anonFile);
 
@@ -104,14 +106,7 @@ public class AnonFileController
             {
                 anonFile.setNickname(nickname);
             }
-            if (keep != null && keep.equals("on"))
-            {
-                anonFile.setKeep(true);
-            }
-            else
-            {
-                anonFile.setKeep(false);
-            }
+
             anonFile.setPassword(PasswordStorage.createHash(password));
             files.save(anonFile);
         }
@@ -119,11 +114,11 @@ public class AnonFileController
     }
 
     @RequestMapping(path = "/delete", method = RequestMethod.POST)
-    public String delete(String id, String password) throws PasswordStorage.CannotPerformOperationException
+    public String delete(String id, String password) throws PasswordStorage.InvalidHashException, PasswordStorage.CannotPerformOperationException
     {
         int newId = Integer.valueOf(id);
-        String deleteHash = PasswordStorage.createHash(password);
-        if (deleteHash.equals(files.findOne(newId).getPassword()))
+        boolean deleteHash = PasswordStorage.verifyPassword(password, files.findOne(newId).getPassword());
+        if (deleteHash)
         {
             String filename = files.findOne(newId).getRealFilename();
             files.delete(newId);
